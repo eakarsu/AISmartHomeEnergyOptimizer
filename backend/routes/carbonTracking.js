@@ -101,4 +101,54 @@ router.post('/analyze', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /summary — carbon footprint summary (kWh × 0.386 kg/kWh)
+router.get('/summary', authenticateToken, async (req, res) => {
+  try {
+    const CARBON_FACTOR = 0.386; // kg CO2 per kWh (US average grid)
+
+    // Sum from carbon_records
+    const { rows: carbonRows } = await pool.query(
+      `SELECT
+         SUM(emission_kg) AS total_emission_kg,
+         SUM(offset_kg) AS total_offset_kg,
+         SUM(net_emission_kg) AS total_net_emission_kg,
+         COUNT(*) AS record_count
+       FROM carbon_records`
+    );
+
+    // Cross-reference with energy consumption
+    const { rows: energyRows } = await pool.query(
+      `SELECT SUM(consumption_kwh) AS total_kwh FROM energy_consumption`
+    );
+
+    const total_kwh = parseFloat(energyRows[0]?.total_kwh) || 0;
+    const estimated_emission_kg = parseFloat((total_kwh * CARBON_FACTOR).toFixed(2));
+
+    const summary = {
+      total_emission_kg: parseFloat(carbonRows[0]?.total_emission_kg) || 0,
+      total_offset_kg: parseFloat(carbonRows[0]?.total_offset_kg) || 0,
+      total_net_emission_kg: parseFloat(carbonRows[0]?.total_net_emission_kg) || 0,
+      record_count: parseInt(carbonRows[0]?.record_count) || 0,
+      energy_derived_emission_kg: estimated_emission_kg,
+      total_kwh_consumed: total_kwh,
+      carbon_factor_kg_per_kwh: CARBON_FACTOR,
+      carbon_trees_equivalent: parseFloat(((parseFloat(carbonRows[0]?.total_emission_kg) || estimated_emission_kg) / 21.77).toFixed(1)),
+    };
+
+    // Monthly breakdown
+    const { rows: monthly } = await pool.query(
+      `SELECT TO_CHAR(date_recorded, 'YYYY-MM') AS month,
+              SUM(emission_kg) AS emission_kg,
+              SUM(offset_kg) AS offset_kg,
+              SUM(net_emission_kg) AS net_emission_kg
+       FROM carbon_records
+       GROUP BY month ORDER BY month DESC LIMIT 12`
+    );
+
+    res.json({ summary, monthly_breakdown: monthly });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
