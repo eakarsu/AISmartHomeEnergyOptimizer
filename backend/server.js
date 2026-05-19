@@ -34,6 +34,9 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/usage-reports', require('./routes/usageReports'));
 app.use('/api/ai', require('./routes/ai'));
 
+// Custom views (VIZ + NON-VIZ) — mount BEFORE 404 handler
+app.use('/api/custom-views', require('./routes/customViews'));
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -71,3 +74,11 @@ app.use('/api/gap-no-live-solar-monitoring-enphase-solaredge', require('./routes
 app.use('/api/gap-no-home-automation-triggers-scenes', require('./routes/gap-no-home-automation-triggers-scenes'));
 app.use('/api/gap-no-public-webhooks-for-grid-signals', require('./routes/gap-no-public-webhooks-for-grid-signals'));
 // === End Batch 07 ===
+
+// Custom views — re-mount after Batch 07 to keep BEFORE 404
+app.use('/api/custom-views', require('./routes/customViews'));
+
+// 404 fallback for unknown /api routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'Not found', path: req.originalUrl });
+});

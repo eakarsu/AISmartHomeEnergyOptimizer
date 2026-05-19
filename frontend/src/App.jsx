@@ -28,6 +28,7 @@ import SolarForecastPage from './pages/SolarForecastPage'
 import RateOptimizationPage from './pages/RateOptimizationPage'
 import BatteryOptimizationPage from './pages/BatteryOptimizationPage'
 import DemandResponsePage from './pages/DemandResponsePage'
+import CustomViewsPage from './pages/CustomViewsPage'
 
 // === Batch 07 Gaps & Frontend Mounts ===
 import CfLoadShiftingOptimizer from './pages/CfLoadShiftingOptimizer';
@@ -87,6 +88,7 @@ export default function App() {
         <Route path="/rate-optimization" element={<ProtectedRoute><RateOptimizationPage /></ProtectedRoute>} />
         <Route path="/battery-optimization" element={<ProtectedRoute><BatteryOptimizationPage /></ProtectedRoute>} />
         <Route path="/demand-response" element={<ProtectedRoute><DemandResponsePage /></ProtectedRoute>} />
+        <Route path="/custom-views" element={<ProtectedRoute><CustomViewsPage /></ProtectedRoute>} />
           // === Batch 07 Gaps & Frontend Mounts ===
           <Route path='/cf-load-shifting-optimizer' element={<CfLoadShiftingOptimizer />} />
           <Route path='/cf-renewable-battery-coordination' element={<CfRenewableBatteryCoordination />} />

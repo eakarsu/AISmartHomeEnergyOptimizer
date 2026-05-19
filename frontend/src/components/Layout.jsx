@@ -32,6 +32,7 @@ const managementFeatures = [
   { path: '/energy-goals', label: 'Energy Goals', icon: IoRibbon },
   { path: '/notifications', label: 'Notifications', icon: IoNotifications },
   { path: '/usage-reports', label: 'Usage Reports', icon: IoDocumentText },
+  { path: '/custom-views', label: 'Energy Views', icon: IoStatsChart },
 ]
 
 const analyticsFeatures = [
