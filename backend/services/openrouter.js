@@ -1,7 +1,24 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-haiku-4.5';
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-3-5-sonnet-20241022';
+
+/**
+ * Parse AI response that may be JSON, JSON in markdown fences, or plain text.
+ * Returns parsed object or null.
+ */
+function parseAIJson(raw) {
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (_) {}
+  const stripped = raw.replace(/```(?:json)?/gi, '').trim();
+  try { return JSON.parse(stripped); } catch (_) {}
+  const start = stripped.indexOf('{');
+  const end = stripped.lastIndexOf('}');
+  if (start !== -1 && end !== -1) {
+    try { return JSON.parse(stripped.slice(start, end + 1)); } catch (_) {}
+  }
+  return null;
+}
 
 async function queryAI(systemPrompt, userMessage) {
   try {
@@ -10,7 +27,7 @@ async function queryAI(systemPrompt, userMessage) {
       headers: {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'http://localhost:3000',
+        'HTTP-Referer': process.env.CLIENT_URL || 'http://localhost:3000',
         'X-Title': 'AI Smart Home Energy Optimizer',
       },
       body: JSON.stringify({
@@ -47,4 +64,4 @@ async function queryAI(systemPrompt, userMessage) {
   }
 }
 
-module.exports = { queryAI };
+module.exports = { queryAI, parseAIJson };

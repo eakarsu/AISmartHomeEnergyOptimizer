@@ -61,4 +61,62 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /progress — compute progress_pct from actual consumption data
+router.get('/progress', authenticateToken, async (req, res) => {
+  try {
+    const { rows: goals } = await pool.query(
+      `SELECT * FROM energy_goals WHERE status = 'active' ORDER BY created_at DESC`
+    );
+
+    // Get total consumption for each goal's time period
+    const goalsWithProgress = await Promise.all(goals.map(async (goal) => {
+      let actualValue = goal.current_value;
+
+      // If goal is kWh-based, pull from consumption data
+      if (goal.unit && goal.unit.toLowerCase().includes('kwh')) {
+        const { rows: consumption } = await pool.query(
+          `SELECT COALESCE(SUM(consumption_kwh), 0) AS actual_kwh
+           FROM energy_consumption
+           WHERE date_recorded BETWEEN $1 AND $2`,
+          [goal.start_date, goal.end_date || new Date()]
+        );
+        actualValue = parseFloat(consumption[0]?.actual_kwh) || goal.current_value;
+      }
+
+      const progress_pct = goal.target_value > 0
+        ? Math.min(100, parseFloat(((actualValue / goal.target_value) * 100).toFixed(2)))
+        : 0;
+
+      // Determine status based on progress and dates
+      const today = new Date();
+      const endDate = goal.end_date ? new Date(goal.end_date) : null;
+      let derived_status = 'on_track';
+      if (progress_pct >= 100) derived_status = 'completed';
+      else if (endDate && today > endDate) derived_status = 'overdue';
+      else if (progress_pct < 30 && endDate) {
+        const totalDays = (endDate - new Date(goal.start_date)) / 86400000;
+        const elapsedDays = (today - new Date(goal.start_date)) / 86400000;
+        if (elapsedDays / totalDays > 0.5 && progress_pct < 30) derived_status = 'at_risk';
+      }
+
+      return { ...goal, actual_value: actualValue, progress_pct, derived_status };
+    }));
+
+    const summary = {
+      total: goalsWithProgress.length,
+      completed: goalsWithProgress.filter((g) => g.progress_pct >= 100).length,
+      on_track: goalsWithProgress.filter((g) => g.derived_status === 'on_track').length,
+      at_risk: goalsWithProgress.filter((g) => g.derived_status === 'at_risk').length,
+      overdue: goalsWithProgress.filter((g) => g.derived_status === 'overdue').length,
+      avg_progress_pct: goalsWithProgress.length
+        ? parseFloat((goalsWithProgress.reduce((s, g) => s + g.progress_pct, 0) / goalsWithProgress.length).toFixed(2))
+        : 0,
+    };
+
+    res.json({ goals: goalsWithProgress, summary });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

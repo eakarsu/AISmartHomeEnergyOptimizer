@@ -4,7 +4,8 @@ import {
   IoFlash, IoSunny, IoBatteryHalf, IoCash, IoCar, IoLeaf,
   IoThermometer, IoHardwareChip, IoWifi, IoStatsChart, IoReceipt,
   IoBuild, IoRibbon, IoNotifications, IoDocumentText,
-  IoLogOut, IoMenu, IoClose, IoHome, IoSparkles
+  IoLogOut, IoMenu, IoClose, IoHome, IoSparkles, IoCalculator,
+  IoAnalytics, IoFlag, IoTrendingUp, IoTime
 } from 'react-icons/io5'
 
 const aiFeatures = [
@@ -16,6 +17,12 @@ const aiFeatures = [
   { path: '/carbon-tracking', label: 'Carbon Tracking', icon: IoLeaf },
   { path: '/thermostats', label: 'Thermostats', icon: IoThermometer },
   { path: '/appliances', label: 'Appliance Efficiency', icon: IoHardwareChip },
+  { path: '/consumption-forecast', label: 'Consumption Forecast', icon: IoTrendingUp },
+  { path: '/equipment-scheduling', label: 'Equipment Scheduling', icon: IoTime },
+  { path: '/solar-forecast', label: 'Solar Forecast', icon: IoSunny },
+  { path: '/rate-optimization', label: 'Rate Optimization', icon: IoCash },
+  { path: '/battery-optimization', label: 'Battery Optimization', icon: IoBatteryHalf },
+  { path: '/demand-response', label: 'Demand Response', icon: IoFlash },
 ]
 
 const managementFeatures = [
@@ -25,6 +32,13 @@ const managementFeatures = [
   { path: '/energy-goals', label: 'Energy Goals', icon: IoRibbon },
   { path: '/notifications', label: 'Notifications', icon: IoNotifications },
   { path: '/usage-reports', label: 'Usage Reports', icon: IoDocumentText },
+  { path: '/custom-views', label: 'Energy Views', icon: IoStatsChart },
+]
+
+const analyticsFeatures = [
+  { path: '/bill-simulator', label: 'Bill Simulator', icon: IoCalculator },
+  { path: '/energy-timeline', label: 'Energy Timeline', icon: IoAnalytics },
+  { path: '/carbon-footprint', label: 'Carbon Footprint', icon: IoLeaf },
 ]
 
 export default function Layout({ children }) {
