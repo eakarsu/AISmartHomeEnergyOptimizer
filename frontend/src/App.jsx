@@ -49,6 +49,9 @@ import GapNoUtilitynetmeteringApiIntegration from './pages/GapNoUtilitynetmeteri
 import GapNoLiveSolarMonitoringEnphaseSolaredge from './pages/GapNoLiveSolarMonitoringEnphaseSolaredge';
 import GapNoHomeAutomationTriggersScenes from './pages/GapNoHomeAutomationTriggersScenes';
 import GapNoPublicWebhooksForGridSignals from './pages/GapNoPublicWebhooksForGridSignals';
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
 // === End Batch 07 ===
 
 
@@ -63,6 +66,9 @@ export default function App() {
     <>
       <ToastContainer position="top-right" autoClose={3000} theme="dark" />
       <Routes>
+        <Route path="/codex/custom-viz" element={<ProtectedRoute><CodexCustomVizFeature /></ProtectedRoute>} />
+        <Route path="/codex/operations" element={<ProtectedRoute><CodexOperationsFeature /></ProtectedRoute>} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/energy-consumption" element={<ProtectedRoute><EnergyConsumptionPage /></ProtectedRoute>} />
