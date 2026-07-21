@@ -4,6 +4,7 @@ const helmet = require('helmet');
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
 const pool = require('./config/database');
+const { authenticateToken } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.BACKEND_PORT || 3001;
@@ -17,6 +18,14 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+app.use('/api/energy-workflow', authenticateToken, require('./routes/energyWorkflow'));
+app.use(/^\/api\/(?:gap-|ai(?:\/|$)|ai-)/, authenticateToken, (req, res) => res.status(503).json({
+  error: 'Generated AI and gap routes are quarantined; use /api/energy-workflow', retryable: false,
+}));
+app.use('/api', authenticateToken);
 app.use('/api/energy-consumption', require('./routes/energyConsumption'));
 app.use('/api/solar-panels', require('./routes/solarPanel'));
 app.use('/api/batteries', require('./routes/batteryManagement'));
@@ -36,27 +45,6 @@ app.use('/api/ai', require('./routes/ai'));
 
 // Custom views (VIZ + NON-VIZ) — mount BEFORE 404 handler
 app.use('/api/custom-views', require('./routes/customViews'));
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Initialize ai_results table on startup
-pool.query(`
-  CREATE TABLE IF NOT EXISTS ai_results (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER,
-    endpoint VARCHAR(100),
-    input_data JSONB,
-    result JSONB,
-    created_at TIMESTAMP DEFAULT NOW()
-  )
-`).catch((err) => console.error('Failed to create ai_results table:', err.message));
-
-app.listen(PORT, () => {
-  console.log(`Backend server running on port ${PORT}`);
-});
 
 // AI feature mount: load-shift
 app.use('/api/ai/load-shift', require('./routes/ai-load-shift'));
@@ -82,3 +70,10 @@ app.use('/api/custom-views', require('./routes/customViews'));
 app.use('/api', (req, res) => {
   res.status(404).json({ error: 'Not found', path: req.originalUrl });
 });
+app.use((err, req, res, next) => {
+  console.error('Unhandled request error:', err.message);
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+});
+
+async function start(){const result=await pool.query("SELECT to_regclass('public.energy_dispatch_cases') AS workflow_table");if(!result.rows[0].workflow_table)throw new Error('Database migrations are required; run ./scripts/migrate.sh');app.listen(PORT,()=>console.log(`Backend server running on port ${PORT}`));}
+start().catch(error=>{console.error('Failed to start server:',error.message);process.exitCode=1;});

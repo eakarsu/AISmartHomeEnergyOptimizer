@@ -1,5 +1,7 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
+if (process.env.ALLOW_DESTRUCTIVE_SEED !== 'true') throw new Error('Set ALLOW_DESTRUCTIVE_SEED=true to run the destructive seed explicitly');
+if (!process.env.SEED_ADMIN_PASSWORD || process.env.SEED_ADMIN_PASSWORD.length < 12) throw new Error('SEED_ADMIN_PASSWORD must contain at least 12 characters');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
@@ -18,10 +20,10 @@ async function seed() {
     console.log('Schema created successfully.');
 
     // Seed default user
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const hashedPassword = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD, 12);
     await client.query(
       `INSERT INTO users (email, password, name) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING`,
-      ['admin@smarthome.com', hashedPassword, 'Admin User']
+      [process.env.SEED_ADMIN_EMAIL || 'admin@smarthome.invalid', hashedPassword, 'Admin User']
     );
     console.log('Default user seeded.');
 

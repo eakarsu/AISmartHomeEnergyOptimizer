@@ -1,0 +1,8 @@
+const test=require('node:test');const assert=require('node:assert/strict');const p=require('../domain/energyDispatchPolicy');
+const event={home_ref:'h1',device_ref:'d1',source_ref:'s1',schema_version:'v1',sequence:9,recorded_at:'2026-07-19T00:00:00Z',checksum:'sha:x',power_watts:500};
+test('normalizes energy telemetry and gaps',()=>assert.equal(p.validateTelemetry(event,6).gap,2));
+test('rejects replay and negative power',()=>{assert.throws(()=>p.validateTelemetry(event,9),/replayed/);assert.throws(()=>p.validateTelemetry({...event,power_watts:-1}),/invalid/);});
+test('enforces household demand constraints',()=>assert.throws(()=>p.validatePlan({plan_ref:'p',tariff_version:'t1',forecast_version:'f1',constraint_version:'c1',max_demand_kw:5,expected_peak_kw:6}),/constraint/));
+test('valid plan remains manual review',()=>assert.equal(p.validatePlan({plan_ref:'p',tariff_version:'t1',forecast_version:'f1',constraint_version:'c1',max_demand_kw:5,expected_peak_kw:4}).manual_review,true));
+test('approval requires independent safety review and override',()=>assert.throws(()=>p.validateTransition('owner_review','approved',{role:'home_owner',actorId:'u1',createdBy:'u1',safetyLimitsVerified:true,manualOverride:true}),/independent/));
+test('dispatch and closure require receipts and outcomes',()=>{assert.throws(()=>p.validateTransition('approved','dispatched',{role:'home_owner'}),/receipt/);assert.equal(p.validateTransition('approved','dispatched',{role:'home_owner',deviceReceipt:{provider:'matter',receipt_id:'r1',status:'acknowledged',acknowledged_at:'2026-07-19'}}),true);assert.throws(()=>p.validateTransition('measured','closed',{}),/outcome/);});
