@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IoFlash, IoLogIn, IoPersonAdd } from 'react-icons/io5'
 import { login } from '../services/api'
+import { demoCredentials } from '../config/demoCredentials'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -26,8 +27,13 @@ export default function Login() {
   }
 
   const autoFill = () => {
-    setEmail('admin@smarthome.com')
-    setPassword('admin123')
+    if (!demoCredentials.available) {
+      setError('Demo credentials are not configured for this local environment.')
+      return
+    }
+    setError('')
+    setEmail(demoCredentials.email)
+    setPassword(demoCredentials.password)
   }
 
   return (
@@ -69,9 +75,20 @@ export default function Login() {
             <IoLogIn /> {loading ? 'Signing in...' : 'Sign In'}
           </button>
 
-          <button type="button" className="btn btn-autofill" onClick={autoFill}>
+          <button
+            type="button"
+            className="btn btn-autofill"
+            onClick={autoFill}
+            disabled={!demoCredentials.available || loading}
+            title={demoCredentials.available ? 'Fill the configured local demo account' : demoCredentials.reason}
+          >
             <IoPersonAdd /> Auto-Fill Demo Credentials
           </button>
+          {!demoCredentials.available && (
+            <p className="demo-credentials-help">
+              Demo autofill is disabled. Configure it in your ignored .env and provision the account first.
+            </p>
+          )}
         </form>
 
         <div className="login-footer">

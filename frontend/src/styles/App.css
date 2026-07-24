@@ -282,6 +282,19 @@ body {
   background: rgba(0, 212, 170, 0.1);
 }
 
+.btn-autofill:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.demo-credentials-help {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 8px 0 0;
+  text-align: center;
+}
+
 /* ---- Login Page ---- */
 .login-page {
   min-height: 100vh;
