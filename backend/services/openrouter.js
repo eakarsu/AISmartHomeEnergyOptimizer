@@ -22,7 +22,9 @@ function parseAIJson(raw) {
 
 async function queryAI(systemPrompt, userMessage) {
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    if (!OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is required');
+    const baseUrl = (process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/$/, '');
+    const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -47,20 +49,17 @@ async function queryAI(systemPrompt, userMessage) {
     }
 
     const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content || !String(content).trim()) throw new Error('OpenRouter returned an empty response');
     return {
       success: true,
-      content: data.choices[0]?.message?.content || 'No response generated',
+      content,
       model: data.model,
       usage: data.usage,
     };
   } catch (error) {
     console.error('OpenRouter API Error:', error.message);
-    return {
-      success: false,
-      content: `AI service error: ${error.message}`,
-      model: OPENROUTER_MODEL,
-      usage: null,
-    };
+    throw error;
   }
 }
 

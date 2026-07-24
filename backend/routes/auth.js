@@ -50,4 +50,14 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/me', require('../middleware/auth').authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT id, name, email, created_at FROM users WHERE id = $1', [req.user.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    return res.json({ ...rows[0], role: 'home_owner' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
