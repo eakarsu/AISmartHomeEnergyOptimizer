@@ -82,7 +82,7 @@ export default function Login() {
             disabled={!demoCredentials.available || loading}
             title={demoCredentials.available ? 'Fill the configured local demo account' : demoCredentials.reason}
           >
-            <IoPersonAdd /> Auto-Fill Demo Credentials
+            <IoPersonAdd /> Auto Fill Demo Credentials
           </button>
           {!demoCredentials.available && (
             <p className="demo-credentials-help">
