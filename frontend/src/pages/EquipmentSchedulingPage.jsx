@@ -3,6 +3,13 @@ import { toast } from 'react-toastify'
 import { IoTime, IoSparkles } from 'react-icons/io5'
 import api from '../services/api'
 import AIResultDisplay from '../components/AIResultDisplay'
+import NativeAIControls from '../components/NativeAIControls'
+
+const equipmentPresets = [
+  { name: 'EV and dishwasher', value: 'EV charger needs 18 kWh by 07:00; run dishwasher before 22:00.' },
+  { name: 'Laundry and pool pump', value: 'Schedule washing machine, dryer, and pool pump outside the 16:00–21:00 peak while respecting quiet hours.' },
+  { name: 'Flexible home loads', value: 'Schedule EV charger, dishwasher, water heater, and laundry around low-cost hours; preserve manual overrides.' },
+]
 
 export default function EquipmentSchedulingPage() {
   const [equipment, setEquipment] = useState('')
@@ -17,7 +24,7 @@ export default function EquipmentSchedulingPage() {
       const payload = equipment ? { equipment } : {}
       const res = await api.post('/ai/equipment-scheduling', payload)
       setResult(res.data)
-      toast.success('Schedule generated')
+      res.data.unavailable ? toast.info('AI workflow unavailable; see report') : toast.success('Schedule generated')
     } catch (err) {
       toast.error(err.response?.data?.error || err.response?.data?.message || 'Scheduling failed')
     } finally {
@@ -26,7 +33,7 @@ export default function EquipmentSchedulingPage() {
   }
 
   return (
-    <div className="feature-page">
+    <NativeAIControls historyEndpoint="equipment-scheduling" busy={loading} presets={equipmentPresets.map(({ name, value }) => ({ name, fill: () => { setEquipment(value); return { filled: 1, manual: [] } } }))}><div className="feature-page">
       <div className="page-header">
         <div className="page-title">
           <IoTime className="page-icon" />
@@ -58,6 +65,6 @@ export default function EquipmentSchedulingPage() {
           onClose={() => setResult(null)}
         />
       )}
-    </div>
+    </div></NativeAIControls>
   )
 }

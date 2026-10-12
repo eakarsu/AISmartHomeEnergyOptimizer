@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import api from '../services/api'
+import api, { listRows } from '../services/api'
 
 const blank = {
   device_name: '',
@@ -21,7 +21,7 @@ export default function SchedulingRulesEditor() {
   const refresh = async () => {
     try {
       const r = await api.get('/custom-views/schedules')
-      setRules(r.data || [])
+      setRules(listRows(r.data))
     } catch (e) {
       setErr(e.response?.data?.error || e.message)
     }

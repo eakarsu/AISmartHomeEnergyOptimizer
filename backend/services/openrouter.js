@@ -59,7 +59,15 @@ async function queryAI(systemPrompt, userMessage) {
     };
   } catch (error) {
     console.error('OpenRouter API Error:', error.message);
-    throw error;
+    return {
+      success: false,
+      unavailable: true,
+      content: {
+        status: 'Unavailable',
+        summary: 'The AI provider is unavailable. No analysis was generated and no device action was taken.',
+        next_step: 'Check the provider configuration or retry later.',
+      },
+    };
   }
 }
 

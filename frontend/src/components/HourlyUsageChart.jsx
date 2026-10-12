@@ -13,7 +13,7 @@ export default function HourlyUsageChart() {
     api.get('/custom-views/hourly-usage')
       .then((r) => {
         if (!alive) return
-        setData(r.data.points || [])
+        setData(Array.isArray(r.data?.points) ? r.data.points : [])
         setMeta({ generated_at: r.data.generated_at, base: r.data.base_per_hour_kwh })
       })
       .catch((e) => alive && setErr(e.response?.data?.error || e.message))

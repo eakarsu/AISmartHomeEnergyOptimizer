@@ -1,3 +1,4 @@
+import { useRef as useDemoLoginRef, useState as useDemoLoginState } from 'react';
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IoFlash, IoLogIn, IoPersonAdd } from 'react-icons/io5'
@@ -5,18 +6,21 @@ import { login } from '../services/api'
 import { demoCredentials } from '../config/demoCredentials'
 
 export default function Login() {
+  const demoLoginLock = useDemoLoginRef(false);
+  const [demoLoginBusy, setDemoLoginBusy] = useDemoLoginState(false);
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e, demoLoginCredentials) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     try {
-      const res = await login(email, password)
+      const res = await login((demoLoginCredentials?.email ?? email), (demoLoginCredentials?.password ?? password))
       localStorage.setItem('token', res.data.token)
       navigate('/')
     } catch (err) {
@@ -78,15 +82,33 @@ export default function Login() {
           <button
             type="button"
             className="btn btn-autofill"
-            onClick={autoFill}
-            disabled={!demoCredentials.available || loading}
-            title={demoCredentials.available ? 'Fill the configured local demo account' : demoCredentials.reason}
+            onClick={async (event) => {
+ if (demoLoginLock.current) return;
+ demoLoginLock.current = true; setDemoLoginBusy(true);
+ const values = {};
+ const captureDemoValue = (key, value) => { values[key] = value; return value; };
+ try {
+  await (async () => {
+    if (!demoCredentials.available) {
+      setError(captureDemoValue("error", 'Demo credentials are not configured for this local environment.'))
+      return
+    }
+    setError(captureDemoValue("error", ''))
+    setEmail(captureDemoValue("email", demoCredentials.email))
+    setPassword(captureDemoValue("password", demoCredentials.password))
+  })(event);
+  if (values.error || typeof values.email !== 'string' || !values.email || typeof values.password !== 'string' || !values.password) { setError(typeof values.error === 'string' ? values.error : 'Demo credentials are unavailable.'); return; }
+  await handleLogin(event, { email: values.email, password: values.password });
+ } finally { demoLoginLock.current = false; setDemoLoginBusy(false); }
+}}
+            disabled={demoLoginBusy || (!demoCredentials.available || loading)}
+            title={demoCredentials.available ? 'Log in with the configured local demo account' : demoCredentials.reason}
           >
-            <IoPersonAdd /> Auto Fill Demo Credentials
+            <IoPersonAdd /> Log In as Demo
           </button>
           {!demoCredentials.available && (
             <p className="demo-credentials-help">
-              Demo autofill is disabled. Configure it in your ignored .env and provision the account first.
+              Demo login is unavailable because frontend demo credentials are not configured. Configure the local frontend environment for an existing demo account.
             </p>
           )}
         </form>

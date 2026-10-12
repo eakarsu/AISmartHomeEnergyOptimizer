@@ -1,3 +1,4 @@
+import NativeAIControls from "../components/NativeAIControls.jsx";
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
 import { IoTrendingUp, IoSparkles } from 'react-icons/io5'
@@ -16,7 +17,7 @@ export default function ConsumptionForecastPage() {
     try {
       const res = await api.post('/ai/consumption-forecast', { days_ahead: Number(daysAhead) })
       setResult(res.data)
-      toast.success('Forecast generated')
+      res.data.unavailable ? toast.info('AI workflow unavailable; see report') : toast.success('Forecast generated')
     } catch (err) {
       toast.error(err.response?.data?.error || err.response?.data?.message || 'Forecast failed')
     } finally {
@@ -25,7 +26,7 @@ export default function ConsumptionForecastPage() {
   }
 
   return (
-    <div className="feature-page">
+    <NativeAIControls historyEndpoint="consumption-forecast" busy={loading} context="SmartHomeEnergyOptimizer"><div className="feature-page">
       <div className="page-header">
         <div className="page-title">
           <IoTrendingUp className="page-icon" />
@@ -37,7 +38,7 @@ export default function ConsumptionForecastPage() {
       <form onSubmit={handleSubmit} className="ai-form" style={{ marginBottom: '1.5rem' }}>
         <div className="form-group">
           <label>Days Ahead (1-30)</label>
-          <input
+          <input data-ai-field={"daysAhead"}
             type="number"
             min="1"
             max="30"
@@ -59,6 +60,6 @@ export default function ConsumptionForecastPage() {
           onClose={() => setResult(null)}
         />
       )}
-    </div>
+    </div></NativeAIControls>
   )
 }

@@ -22,9 +22,52 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 app.use('/api/energy-workflow', authenticateToken, require('./routes/energyWorkflow'));
-app.use(/^\/api\/(?:gap-|ai-)/, authenticateToken, (req, res) => res.status(503).json({
-  error: 'Generated AI and gap routes are quarantined; use /api/energy-workflow', retryable: false,
-}));
+// Generated AI and gap workflows cannot issue device actions. Keep the
+// quarantine, but return a renderable explanation for their existing UI routes.
+const quarantinedReport = {
+  status: 'Unavailable',
+  summary: 'This generated AI workflow is quarantined for device safety. No model was called and no device action was taken.',
+  next_step: 'Use the reviewed energy workflow for operational planning and approvals.',
+};
+const quarantinedGeneratedRoutes = new Set([
+  '/cf-load-shifting-optimizer',
+  '/cf-renewable-battery-coordination',
+  '/cf-demand-response-automation',
+  '/cf-appliance-lifetime-optimization',
+  '/cf-wholehome-energy-resilience',
+  '/cf-behavioral-energy-coaching',
+  '/gap-no-consumptionforecast-predict-energy-use',
+  '/gap-no-equipmentscheduling-runwhencheap',
+  '/gap-no-rateoptimization-load-shifting-for-tou',
+  '/gap-no-solarforecast-generation-prediction',
+  '/gap-no-batterymanagementoptimization',
+  '/gap-no-demandresponseautomation',
+  '/gap-no-smart-device-api-integration-nest-tesla-e',
+  '/gap-no-realtime-monitoring-dashboard-backend',
+  '/gap-no-utilitynetmetering-api-integration',
+  '/gap-no-live-solar-monitoring-enphase-solaredge',
+  '/gap-no-home-automation-triggers-scenes',
+  '/gap-no-public-webhooks-for-grid-signals',
+]);
+app.use('/api', authenticateToken, (req, res, next) => {
+  if (req.method === 'POST' && quarantinedGeneratedRoutes.has(req.path)) {
+    return res.json({ ok: true, unavailable: true, output: quarantinedReport });
+  }
+  if (req.method !== 'POST' || !req.path.startsWith('/ai/')) return next();
+  const aiPath = req.path.slice('/ai'.length);
+  if (aiPath === '/results') return next();
+  const resultKey = {
+    '/bill-simulate': 'forecast',
+    '/consumption-forecast': 'forecast',
+    '/solar-forecast': 'forecast',
+    '/equipment-scheduling': 'scheduling',
+    '/rate-optimization': 'optimization',
+    '/battery-management-optimization': 'optimization',
+    '/demand-response-automation': 'plan',
+  }[aiPath];
+  if (!resultKey && !['/optimize-usage', '/load-shift'].includes(aiPath)) return next();
+  res.json({ unavailable: true, [resultKey || 'optimization']: quarantinedReport });
+});
 app.use('/api', authenticateToken);
 app.use('/api/energy-consumption', require('./routes/energyConsumption'));
 app.use('/api/solar-panels', require('./routes/solarPanel'));

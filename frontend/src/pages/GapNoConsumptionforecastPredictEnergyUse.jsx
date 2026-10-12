@@ -1,3 +1,4 @@
+import FormattedAIReport from "../components/FormattedAIReport";
 // // === Batch 07 Gaps & Frontend Mounts ===
 import React, { useState } from 'react';
 
@@ -8,19 +9,19 @@ export default function GapNoConsumptionforecastPredictEnergyUse() {
   const [error, setError] = useState(null);
 
   const sampleRequests = [
-      {
-          "label": "Scenario",
-          "value": "Run No /consumption-forecast (predict energy use) for a realistic customer case.\nContext: a team needs a practical recommendation based on incomplete operating data.\nGoal: identify the best action, key risks, missing information, and expected business impact.\nReturn: summary, prioritized action plan, assumptions, and follow-up questions."
-      },
-      {
-          "label": "Data sample",
-          "value": "Analyze this No /consumption-forecast (predict energy use) data sample.\nInput records:\n- Record 1: urgent, customer impact high, owner unassigned\n- Record 2: medium priority, blocked by missing data\n- Record 3: recurring issue, automation opportunity\nReturn structured findings, anomalies, recommendations, and confidence."
-      },
-      {
-          "label": "Executive review",
-          "value": "Prepare an executive review for No /consumption-forecast (predict energy use).\nAudience: business owner, operations lead, and implementation team.\nInclude impact, risk, estimated effort, decision points, and a concise next-step plan."
-      }
-  ];
+    {
+        "label": "Home scenario",
+        "value": "Recent household consumption is 24, 27, 25, 31, 29, 26, and 28 kWh/day. Forecast the next seven days with assumptions for mild weather and identify uncertainty; these are illustrative readings. Return a practical recommendation, assumptions, and missing inputs."
+    },
+    {
+        "label": "Conservative plan",
+        "value": "Recent household consumption is 24, 27, 25, 31, 29, 26, and 28 kWh/day. Forecast the next seven days with assumptions for mild weather and identify uncertainty; these are illustrative readings. Prioritize safety and comfort. Include constraints, a cautious schedule, and what must be verified before action."
+    },
+    {
+        "label": "Cost and resilience review",
+        "value": "Recent household consumption is 24, 27, 25, 31, 29, 26, and 28 kWh/day. Forecast the next seven days with assumptions for mild weather and identify uncertainty; these are illustrative readings. Compare estimated costs and resilience tradeoffs. Show calculations only where the supplied illustrative data supports them."
+    }
+];
 
   const applySampleRequest = (value) => {
     setInput(value);
@@ -83,9 +84,7 @@ export default function GapNoConsumptionforecastPredictEnergyUse() {
         <div style={{ marginTop: 16, padding: 12, background: '#fee', color: '#900', borderRadius: 6 }}>{error}</div>
       )}
       {output && (
-        <pre style={{ marginTop: 16, padding: 12, background: '#f7f7f7', borderRadius: 6, overflow: 'auto', maxHeight: 480 }}>
-{JSON.stringify(output, null, 2)}
-        </pre>
+        <FormattedAIReport response={output} />
       )}
     </div>
   );

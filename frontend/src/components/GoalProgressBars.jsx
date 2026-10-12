@@ -18,7 +18,7 @@ export default function GoalProgressBars() {
     setLoading(true)
     try {
       const res = await api.get('/energy-goals/progress')
-      setData(res.data)
+      setData({ ...res.data, goals: Array.isArray(res.data?.goals) ? res.data.goals : [] })
     } catch (err) {
       toast.error('Failed to load goal progress')
     } finally {

@@ -100,7 +100,7 @@ router.get('/device-heatmap', authenticateToken, async (req, res) => {
     try {
       const { rows } = await pool.query(
         `SELECT device_name, COALESCE(power_consumption_w,150) AS watts
-           FROM devices ORDER BY device_name LIMIT 8`
+           FROM devices ORDER BY device_name LIMIT 15`
       );
       devices = rows;
     } catch (_) {

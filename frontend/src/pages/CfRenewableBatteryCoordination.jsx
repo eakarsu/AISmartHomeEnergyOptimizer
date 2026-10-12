@@ -1,3 +1,4 @@
+import FormattedAIReport from "../components/FormattedAIReport";
 // // === Batch 07 Gaps & Frontend Mounts ===
 import React, { useState } from 'react';
 
@@ -8,19 +9,19 @@ export default function CfRenewableBatteryCoordination() {
   const [error, setError] = useState(null);
 
   const sampleRequests = [
-      {
-          "label": "Scenario",
-          "value": "Run Renewable + battery coordination for a realistic customer case.\nContext: a team needs a practical recommendation based on incomplete operating data.\nGoal: identify the best action, key risks, missing information, and expected business impact.\nReturn: summary, prioritized action plan, assumptions, and follow-up questions."
-      },
-      {
-          "label": "Data sample",
-          "value": "Analyze this Renewable + battery coordination data sample.\nInput records:\n- Record 1: urgent, customer impact high, owner unassigned\n- Record 2: medium priority, blocked by missing data\n- Record 3: recurring issue, automation opportunity\nReturn structured findings, anomalies, recommendations, and confidence."
-      },
-      {
-          "label": "Executive review",
-          "value": "Prepare an executive review for Renewable + battery coordination.\nAudience: business owner, operations lead, and implementation team.\nInclude impact, risk, estimated effort, decision points, and a concise next-step plan."
-      }
-  ];
+    {
+        "label": "Home scenario",
+        "value": "A home has 6 kW rooftop solar, a 13.5 kWh battery at 40% charge, and 24 kWh typical daily load. Solar peaks near noon; evening TOU price is $0.34/kWh. Recommend charge and discharge windows while keeping a 25% outage reserve. Return a practical recommendation, assumptions, and missing inputs."
+    },
+    {
+        "label": "Conservative plan",
+        "value": "A home has 6 kW rooftop solar, a 13.5 kWh battery at 40% charge, and 24 kWh typical daily load. Solar peaks near noon; evening TOU price is $0.34/kWh. Recommend charge and discharge windows while keeping a 25% outage reserve. Prioritize safety and comfort. Include constraints, a cautious schedule, and what must be verified before action."
+    },
+    {
+        "label": "Cost and resilience review",
+        "value": "A home has 6 kW rooftop solar, a 13.5 kWh battery at 40% charge, and 24 kWh typical daily load. Solar peaks near noon; evening TOU price is $0.34/kWh. Recommend charge and discharge windows while keeping a 25% outage reserve. Compare estimated costs and resilience tradeoffs. Show calculations only where the supplied illustrative data supports them."
+    }
+];
 
   const applySampleRequest = (value) => {
     setInput(value);
@@ -83,9 +84,7 @@ export default function CfRenewableBatteryCoordination() {
         <div style={{ marginTop: 16, padding: 12, background: '#fee', color: '#900', borderRadius: 6 }}>{error}</div>
       )}
       {output && (
-        <pre style={{ marginTop: 16, padding: 12, background: '#f7f7f7', borderRadius: 6, overflow: 'auto', maxHeight: 480 }}>
-{JSON.stringify(output, null, 2)}
-        </pre>
+        <FormattedAIReport response={output} />
       )}
     </div>
   );

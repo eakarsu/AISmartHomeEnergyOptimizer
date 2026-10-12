@@ -18,7 +18,7 @@ export default function EnergyTimelinePage() {
       const params = new URLSearchParams({ days })
       if (category !== 'All') params.set('category', category)
       const res = await api.get(`/energy-consumption/timeline?${params}`)
-      setData(res.data.timeline || [])
+      setData(Array.isArray(res.data?.timeline) ? res.data.timeline : [])
     } catch (err) {
       toast.error('Failed to load timeline')
     } finally {

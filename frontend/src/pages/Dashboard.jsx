@@ -6,7 +6,7 @@ import {
   IoBuild, IoRibbon, IoNotifications, IoDocumentText, IoSparkles,
   IoTrendingDown, IoTrendingUp
 } from 'react-icons/io5'
-import { getAll } from '../services/api'
+import { getAll, listRows } from '../services/api'
 
 const features = [
   { path: '/energy-consumption', label: 'Energy Consumption', icon: IoFlash, desc: 'AI-powered consumption analysis & optimization', ai: true, endpoint: '/energy-consumption', color: '#f59e0b' },
@@ -35,7 +35,7 @@ export default function Dashboard() {
 
     features.forEach(f => {
       getAll(f.endpoint).then(r => {
-        const data = Array.isArray(r.data) ? r.data : r.data.data || []
+        const data = listRows(r.data)
         setCounts(prev => ({ ...prev, [f.endpoint]: data.length }))
       }).catch(() => {})
     })

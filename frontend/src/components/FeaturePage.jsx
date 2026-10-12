@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import { IoAdd, IoSparkles, IoRefresh } from 'react-icons/io5'
-import { getAll, create, update, remove, runAI } from '../services/api'
+import { getAll, listRows, create, update, remove, runAI } from '../services/api'
 import Modal from './Modal'
 import DetailPanel from './DetailPanel'
 import AIResultDisplay from './AIResultDisplay'
@@ -19,7 +19,7 @@ export default function FeaturePage({ title, icon: Icon, apiEndpoint, columns, f
     setLoading(true)
     try {
       const res = await getAll(apiEndpoint)
-      setItems(Array.isArray(res.data) ? res.data : res.data.data || [])
+      setItems(listRows(res.data))
     } catch (err) {
       toast.error('Failed to load data')
     } finally {
@@ -73,7 +73,7 @@ export default function FeaturePage({ title, icon: Icon, apiEndpoint, columns, f
     try {
       const res = await runAI(aiEndpoint)
       setAiResult(res.data)
-      toast.success('AI analysis complete')
+      res.data.unavailable ? toast.info('AI provider unavailable; see report') : toast.success('AI analysis complete')
     } catch (err) {
       toast.error(err.response?.data?.message || 'AI analysis failed')
     } finally {

@@ -1,3 +1,4 @@
+import NativeAIControls from "../components/NativeAIControls.jsx";
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
 import { IoCash, IoSparkles } from 'react-icons/io5'
@@ -16,7 +17,7 @@ export default function RateOptimizationPage() {
     try {
       const res = await api.post('/ai/rate-optimization', { horizon_days: Number(horizonDays) })
       setResult(res.data)
-      toast.success('Rate optimization generated')
+      res.data.unavailable ? toast.info('AI workflow unavailable; see report') : toast.success('Rate optimization generated')
     } catch (err) {
       const status = err.response?.status
       const msg = err.response?.data?.error || err.response?.data?.message || 'Optimization failed'
@@ -31,7 +32,7 @@ export default function RateOptimizationPage() {
   }
 
   return (
-    <div className="feature-page">
+    <NativeAIControls historyEndpoint="rate-optimization" busy={loading} context="SmartHomeEnergyOptimizer"><div className="feature-page">
       <div className="page-header">
         <div className="page-title">
           <IoCash className="page-icon" />
@@ -43,7 +44,7 @@ export default function RateOptimizationPage() {
       <form onSubmit={handleSubmit} className="ai-form" style={{ marginBottom: '1.5rem' }}>
         <div className="form-group">
           <label>Horizon (days, 1-30)</label>
-          <input
+          <input data-ai-field={"horizonDays"}
             type="number"
             min="1"
             max="30"
@@ -65,6 +66,6 @@ export default function RateOptimizationPage() {
           onClose={() => setResult(null)}
         />
       )}
-    </div>
+    </div></NativeAIControls>
   )
 }

@@ -29,6 +29,13 @@ export const register = (data) => api.post('/auth/register', data)
 
 // Generic CRUD
 export const getAll = (endpoint) => api.get(endpoint)
+// List routes return either rows directly or { data: rows, pagination }.
+// Keep invalid/error payloads out of components that render array methods.
+export const listRows = (payload) => {
+  if (Array.isArray(payload)) return payload
+  if (payload && Array.isArray(payload.data)) return payload.data
+  return []
+}
 export const getById = (endpoint, id) => api.get(`${endpoint}/${id}`)
 export const create = (endpoint, data) => api.post(endpoint, data)
 export const update = (endpoint, id, data) => api.put(`${endpoint}/${id}`, data)

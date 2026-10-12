@@ -3,6 +3,8 @@ import { toast } from 'react-toastify'
 import { IoCalculator, IoSparkles, IoTrendingUp, IoTrendingDown, IoRemove } from 'react-icons/io5'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts'
 import api from '../services/api'
+import NativeAIControls from '../components/NativeAIControls'
+import FormattedAIReport from '../components/FormattedAIReport'
 
 const TREND_ICONS = {
   increasing: { icon: IoTrendingUp, color: '#ef4444', label: 'Increasing' },
@@ -20,7 +22,7 @@ export default function BillSimulatorPage() {
     try {
       const res = await api.post('/ai/bill-simulate', { months_ahead: monthsAhead })
       setResult(res.data)
-      toast.success('Bill simulation complete')
+      res.data.unavailable ? toast.info('AI workflow unavailable; see report') : toast.success('Bill simulation complete')
     } catch (err) {
       toast.error('Simulation failed: ' + (err.response?.data?.error || err.message))
     } finally {
@@ -39,7 +41,11 @@ export default function BillSimulatorPage() {
   }))
 
   return (
-    <div className="page-container" style={{ padding: '1.5rem', maxWidth: '900px', margin: '0 auto' }}>
+    <NativeAIControls historyEndpoint="bill-simulate" busy={loading} presets={[
+      { name: 'Next month', fill: () => { setMonthsAhead(1); return { filled: 1 } } },
+      { name: 'Quarterly outlook', fill: () => { setMonthsAhead(3); return { filled: 1 } } },
+      { name: 'Annual outlook', fill: () => { setMonthsAhead(12); return { filled: 1 } } },
+    ]}><div className="page-container" style={{ padding: '1.5rem', maxWidth: '900px', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
         <IoCalculator size={28} color="#8b5cf6" />
         <div>
@@ -88,8 +94,9 @@ export default function BillSimulatorPage() {
 
       {result && !loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <FormattedAIReport response={result} title="Bill forecast details" />
           {/* Summary */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
+          {!result.unavailable && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
             <div className="card" style={{ padding: '1rem', textAlign: 'center' }}>
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Forecast Cost</p>
               <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, color: '#8b5cf6' }}>
@@ -112,7 +119,7 @@ export default function BillSimulatorPage() {
                 </div>
               </div>
             )}
-          </div>
+          </div>}
 
           {/* Monthly cost bar chart */}
           {chartData.length > 0 && (
@@ -213,6 +220,6 @@ export default function BillSimulatorPage() {
           <p style={{ color: 'var(--text-muted)' }}>Select a forecast period and click "Run AI Simulation" to get your bill forecast</p>
         </div>
       )}
-    </div>
+    </div></NativeAIControls>
   )
 }

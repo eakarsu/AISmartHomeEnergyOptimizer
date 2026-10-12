@@ -19,7 +19,7 @@ export default function DeviceEnergyHeatmap() {
   useEffect(() => {
     let alive = true
     api.get('/custom-views/device-heatmap')
-      .then((r) => alive && setData(r.data))
+      .then((r) => alive && setData({ ...r.data, devices: Array.isArray(r.data?.devices) ? r.data.devices : [] }))
       .catch((e) => alive && setErr(e.response?.data?.error || e.message))
       .finally(() => alive && setLoading(false))
     return () => { alive = false }
@@ -45,8 +45,8 @@ export default function DeviceEnergyHeatmap() {
                 </tr>
               </thead>
               <tbody>
-                {data.devices.map((d) => (
-                  <tr key={d.device}>
+                {data.devices.map((d, rowIndex) => (
+                  <tr key={`${d.device}-${rowIndex}`}>
                     <td style={{ padding: 6, position: 'sticky', left: 0, background: '#1c1f2b' }}>{d.device}</td>
                     {d.hours.map((v, i) => (
                       <td key={i} title={`${data.hour_labels[i]} – ${v} kWh`}

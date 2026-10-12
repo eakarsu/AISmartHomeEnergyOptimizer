@@ -24,7 +24,7 @@ export default function CarbonFootprintPage() {
 
   useEffect(() => { load() }, [])
 
-  const monthly = data?.monthly_breakdown || []
+  const monthly = Array.isArray(data?.monthly_breakdown) ? data.monthly_breakdown : []
   const monthlyChartData = monthly.map((m) => ({
     month: m.month,
     emission: parseFloat(m.emission_kg) || 0,

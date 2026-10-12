@@ -1,3 +1,4 @@
+import FormattedAIReport from "../components/FormattedAIReport";
 // // === Batch 07 Gaps & Frontend Mounts ===
 import React, { useState } from 'react';
 
@@ -8,19 +9,19 @@ export default function CfApplianceLifetimeOptimization() {
   const [error, setError] = useState(null);
 
   const sampleRequests = [
-      {
-          "label": "Scenario",
-          "value": "Run Appliance lifetime optimization for a realistic customer case.\nContext: a team needs a practical recommendation based on incomplete operating data.\nGoal: identify the best action, key risks, missing information, and expected business impact.\nReturn: summary, prioritized action plan, assumptions, and follow-up questions."
-      },
-      {
-          "label": "Data sample",
-          "value": "Analyze this Appliance lifetime optimization data sample.\nInput records:\n- Record 1: urgent, customer impact high, owner unassigned\n- Record 2: medium priority, blocked by missing data\n- Record 3: recurring issue, automation opportunity\nReturn structured findings, anomalies, recommendations, and confidence."
-      },
-      {
-          "label": "Executive review",
-          "value": "Prepare an executive review for Appliance lifetime optimization.\nAudience: business owner, operations lead, and implementation team.\nInclude impact, risk, estimated effort, decision points, and a concise next-step plan."
-      }
-  ];
+    {
+        "label": "Home scenario",
+        "value": "A 12-year-old refrigerator uses an estimated 700 kWh/year and a replacement is rated 430 kWh/year at $950. Electricity costs $0.20/kWh. Compare continued use and replacement, including uncertainty in measured consumption. Return a practical recommendation, assumptions, and missing inputs."
+    },
+    {
+        "label": "Conservative plan",
+        "value": "A 12-year-old refrigerator uses an estimated 700 kWh/year and a replacement is rated 430 kWh/year at $950. Electricity costs $0.20/kWh. Compare continued use and replacement, including uncertainty in measured consumption. Prioritize safety and comfort. Include constraints, a cautious schedule, and what must be verified before action."
+    },
+    {
+        "label": "Cost and resilience review",
+        "value": "A 12-year-old refrigerator uses an estimated 700 kWh/year and a replacement is rated 430 kWh/year at $950. Electricity costs $0.20/kWh. Compare continued use and replacement, including uncertainty in measured consumption. Compare estimated costs and resilience tradeoffs. Show calculations only where the supplied illustrative data supports them."
+    }
+];
 
   const applySampleRequest = (value) => {
     setInput(value);
@@ -83,9 +84,7 @@ export default function CfApplianceLifetimeOptimization() {
         <div style={{ marginTop: 16, padding: 12, background: '#fee', color: '#900', borderRadius: 6 }}>{error}</div>
       )}
       {output && (
-        <pre style={{ marginTop: 16, padding: 12, background: '#f7f7f7', borderRadius: 6, overflow: 'auto', maxHeight: 480 }}>
-{JSON.stringify(output, null, 2)}
-        </pre>
+        <FormattedAIReport response={output} />
       )}
     </div>
   );

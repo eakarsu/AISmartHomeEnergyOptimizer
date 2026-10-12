@@ -3,6 +3,19 @@ import { toast } from 'react-toastify'
 import { IoFlash, IoSparkles } from 'react-icons/io5'
 import api from '../services/api'
 import AIResultDisplay from '../components/AIResultDisplay'
+import NativeAIControls from '../components/NativeAIControls'
+
+const drPresets = [
+  { name: 'Standard evening event', severity: 'standard', incentive: '10' },
+  { name: 'Emergency event', severity: 'emergency', incentive: '25' },
+  { name: 'Economic event', severity: 'economic', incentive: '15' },
+]
+
+function eventWindowFor(daysAhead) {
+  const date = new Date()
+  date.setDate(date.getDate() + daysAhead)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} 17:00-20:00`
+}
 
 export default function DemandResponsePage() {
   const [eventWindow, setEventWindow] = useState('')
@@ -23,7 +36,7 @@ export default function DemandResponsePage() {
       if (incentive !== '') payload.expected_incentive_usd = Number(incentive)
       const res = await api.post('/ai/demand-response-automation', payload)
       setResult(res.data)
-      toast.success('DR plan generated')
+      res.data.unavailable ? toast.info('AI workflow unavailable; see report') : toast.success('DR plan generated')
     } catch (err) {
       const status = err.response?.status
       const msg = err.response?.data?.error || err.response?.data?.message || 'Plan failed'
@@ -38,7 +51,7 @@ export default function DemandResponsePage() {
   }
 
   return (
-    <div className="feature-page">
+    <NativeAIControls historyEndpoint="demand-response-automation" busy={loading} presets={drPresets.map(({ name, severity, incentive }, index) => ({ name, fill: () => { setEventWindow(eventWindowFor(index + 1)); setEventSeverity(severity); setIncentive(incentive); return { filled: 3, manual: [] } } }))}><div className="feature-page">
       <div className="page-header">
         <div className="page-title">
           <IoFlash className="page-icon" />
@@ -88,6 +101,6 @@ export default function DemandResponsePage() {
           onClose={() => setResult(null)}
         />
       )}
-    </div>
+    </div></NativeAIControls>
   )
 }
