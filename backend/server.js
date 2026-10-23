@@ -22,6 +22,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 app.use('/api/energy-workflow', authenticateToken, require('./routes/energyWorkflow'));
+app.use('/api/feature-pack', authenticateToken, require('./routes/featurePack').createFeaturePackRouter());
 // Generated AI and gap workflows cannot issue device actions. Keep the
 // quarantine, but return a renderable explanation for their existing UI routes.
 const quarantinedReport = {
